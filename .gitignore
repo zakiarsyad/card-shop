@@ -21,3 +21,6 @@ npm-debug.log*
 .DS_Store
 .vscode/*
 !.vscode/extensions.json
+
+# netlify edge functions artifact
+deno.lock
