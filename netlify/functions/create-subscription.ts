@@ -1,8 +1,9 @@
 import type { Context } from "@netlify/functions";
 import type Stripe from "stripe";
 import { getStripe } from "./_shared/stripe";
-import { json, errorResponse, methodNotAllowed, readJson, correlationId } from "./_shared/http";
-import { getPlan, priceIdFor } from "../../src/lib/catalog";
+import { json, errorResponse, methodNotAllowed, correlationId } from "./_shared/http";
+import { parseCheckoutRequest } from "./_shared/checkout";
+import { priceIdFor } from "../../src/lib/catalog";
 import { extractSubscriptionClientSecret, type SubscriptionLike } from "../../src/lib/subscription";
 import { createLogger } from "../../src/lib/log";
 
@@ -16,27 +17,12 @@ import { createLogger } from "../../src/lib/log";
 export default async function handler(req: Request, _context: Context): Promise<Response> {
   if (req.method !== "POST") return methodNotAllowed();
 
+  const parsed = await parseCheckoutRequest(req, "subscription");
+  if (parsed instanceof Response) return parsed;
+  const { plan, idempotencyKey, email } = parsed;
+
   const cid = correlationId();
   const log = createLogger({ fn: "create-subscription", cid });
-
-  const body = await readJson(req);
-  if (typeof body !== "object" || body === null) {
-    return errorResponse(400, "invalid_body", "Request body must be JSON.");
-  }
-  const { plan: planKey, idempotencyKey, email } = body as Record<string, unknown>;
-
-  let plan;
-  try {
-    plan = getPlan(planKey);
-  } catch {
-    return errorResponse(400, "unknown_plan", "Unknown plan.");
-  }
-  if (plan.mode !== "subscription") {
-    return errorResponse(400, "wrong_endpoint", "Use the one-time endpoint for non-recurring plans.");
-  }
-
-  const idemKey =
-    typeof idempotencyKey === "string" && idempotencyKey.length >= 8 ? idempotencyKey : crypto.randomUUID();
 
   try {
     const stripe = getStripe();
@@ -45,8 +31,8 @@ export default async function handler(req: Request, _context: Context): Promise<
     // A guest customer — no accounts in scope (PRD non-goals). Idempotent so a
     // retried attempt reuses the same customer rather than creating duplicates.
     const customer = await stripe.customers.create(
-      { metadata: { product: "pro_ui_kit", cid }, ...(typeof email === "string" ? { email } : {}) },
-      { idempotencyKey: `${idemKey}:customer` },
+      { metadata: { product: "pro_ui_kit", cid }, ...(email ? { email } : {}) },
+      { idempotencyKey: `${idempotencyKey}:customer` },
     );
 
     log.info("creating subscription", { customer: customer.id, price: priceId });
@@ -61,7 +47,7 @@ export default async function handler(req: Request, _context: Context): Promise<
       metadata: { plan: plan.key, product: "pro_ui_kit", cid },
     } as unknown as Stripe.SubscriptionCreateParams;
 
-    const subscription = await stripe.subscriptions.create(params, { idempotencyKey: idemKey });
+    const subscription = await stripe.subscriptions.create(params, { idempotencyKey });
     const clientSecret = extractSubscriptionClientSecret(subscription as unknown as SubscriptionLike);
 
     log.info("subscription created", { id: subscription.id, status: subscription.status });

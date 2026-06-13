@@ -1,7 +1,7 @@
 import type { Context } from "@netlify/functions";
 import { getStripe } from "./_shared/stripe";
-import { json, errorResponse, methodNotAllowed, readJson, correlationId } from "./_shared/http";
-import { getPlan } from "../../src/lib/catalog";
+import { json, errorResponse, methodNotAllowed, correlationId } from "./_shared/http";
+import { parseCheckoutRequest } from "./_shared/checkout";
 import { createLogger } from "../../src/lib/log";
 
 /**
@@ -12,33 +12,12 @@ import { createLogger } from "../../src/lib/log";
 export default async function handler(req: Request, _context: Context): Promise<Response> {
   if (req.method !== "POST") return methodNotAllowed();
 
+  const parsed = await parseCheckoutRequest(req, "payment");
+  if (parsed instanceof Response) return parsed;
+  const { plan, idempotencyKey } = parsed;
+
   const cid = correlationId();
   const log = createLogger({ fn: "create-payment-intent", cid });
-
-  const body = await readJson(req);
-  if (typeof body !== "object" || body === null) {
-    return errorResponse(400, "invalid_body", "Request body must be JSON.");
-  }
-  const { plan: planKey, idempotencyKey } = body as Record<string, unknown>;
-
-  let plan;
-  try {
-    plan = getPlan(planKey);
-  } catch {
-    log.warn("unknown plan key", { planKey });
-    return errorResponse(400, "unknown_plan", "Unknown plan.");
-  }
-
-  if (plan.mode !== "payment") {
-    // Subscriptions go through create-subscription, not here.
-    return errorResponse(400, "wrong_endpoint", "Use the subscription endpoint for recurring plans.");
-  }
-
-  // Idempotency: trust a client-supplied token for retry-dedupe, else mint one.
-  const idemKey =
-    typeof idempotencyKey === "string" && idempotencyKey.length >= 8
-      ? idempotencyKey
-      : crypto.randomUUID();
 
   try {
     const stripe = getStripe();
@@ -51,7 +30,7 @@ export default async function handler(req: Request, _context: Context): Promise<
         automatic_payment_methods: { enabled: true },
         metadata: { plan: plan.key, product: "pro_ui_kit", cid },
       },
-      { idempotencyKey: idemKey },
+      { idempotencyKey },
     );
 
     log.info("payment intent created", { id: intent.id, status: intent.status });

@@ -43,7 +43,6 @@ export interface Logger {
 export function createLogger(base: Record<string, unknown> = {}): Logger {
   const emit = (level: Level, msg: string, fields: Record<string, unknown> = {}) => {
     const line = { level, msg, ...redact({ ...base, ...fields }) as object };
-    // eslint-disable-next-line no-console
     (level === "error" ? console.error : console.log)(JSON.stringify(line));
   };
   return {
