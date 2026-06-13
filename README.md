@@ -20,6 +20,10 @@ server-authoritative pricing, and complete payment-state handling.
 - **Server-authoritative pricing.** The client sends a product key, never an amount. →
   [`ADR-0004`](docs/decisions/ADR-0004-server-side-catalog.md)
 
+**New to the code?** Start with [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — a 5-minute
+code map: the request lifecycle traced through the actual files, a directory guide, and a
+"where do I change X?" table.
+
 Full reasoning lives in `docs/`. The quality bar — design, engineering, performance, and
 payments depth — is written down in [`docs/STANDARDS.md`](docs/STANDARDS.md). How the project was
 built (markdown-first, driven through the [`agent-skills`](https://github.com/addyosmani/agent-skills)
