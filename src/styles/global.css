@@ -1,54 +1,55 @@
 @import "tailwindcss";
 
 /* ───────────────────────────────────────────────────────────────────────
-   Design tokens (docs/STANDARDS.md → Design & UX).
-   One deliberate pairing: Fraunces (display) + Inter (body). Restraint
-   everywhere; boldness is spent in a single signature moment — the price.
-   Fonts are self-hosted (Fontsource) so there's no external request and no
-   layout shift. System stack is the fallback.
+   Design tokens — Stripe-aligned visual language.
+   See docs/decisions/ADR-0006-visual-design-language.md and
+   docs/STANDARDS.md → Design & UX.
+
+   Type: one high-quality variable sans (Inter) across the whole UI — the free
+   analog of Stripe's Söhne. Hierarchy comes from weight + size + tracking, not
+   from a second face. One variable family (Latin subset) keeps it fast.
+
+   Color: Stripe's palette — deep navy ink (#0A2540), slate body text (#425466),
+   the signature "blurple" (#635BFF) for primary actions, cool #F6F9FC canvas,
+   and Stripe's own error red (#DF1B41).
    ─────────────────────────────────────────────────────────────────────── */
 @theme {
-  --font-sans: "Inter Variable", ui-sans-serif, system-ui, -apple-system,
-    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto,
+    Helvetica, Arial, sans-serif;
 
-  /* Neutral ink scale — warm, calm, premium. */
-  --color-ink-950: #0c0a09;
-  --color-ink-900: #1c1917;
-  --color-ink-700: #44403c;
-  --color-ink-500: #78716c;
-  --color-ink-400: #a8a29e;
-  --color-ink-200: #e7e5e4;
-  --color-ink-100: #f5f5f4;
-  --color-ink-50: #fafaf9;
+  /* Ink — Stripe navy → slate → muted. */
+  --color-ink-900: #0a2540;
+  --color-ink-700: #425466;
+  /* ink-600: muted text that still meets AA on tinted backgrounds (panel/accent-soft). */
+  --color-ink-600: #5b6676;
+  --color-ink-500: #697386;
+  --color-ink-200: #e3e8ee;
+  --color-ink-100: #eef2f7;
   --color-paper: #ffffff;
+  --color-bg: #f6f9fc;
 
-  /* Single accent — confident, trustworthy. Used sparingly. */
-  --color-accent: #4f46e5;
-  --color-accent-strong: #4338ca;
-  --color-accent-soft: #eef2ff;
+  /* Primary — Stripe blurple. */
+  --color-accent: #635bff;
+  --color-accent-strong: #4f48e0;
+  --color-accent-soft: #f0f1ff;
 
-  /* Semantic states. */
-  --color-success: #047857;
-  --color-success-soft: #ecfdf5;
-  --color-danger: #b91c1c;
-  --color-danger-soft: #fef2f2;
-  --color-warning: #b45309;
-  --color-warning-soft: #fffbeb;
+  /* Semantic states (Stripe-tuned). */
+  --color-success: #1a7f4b;
+  --color-success-soft: #e6f6ee;
+  --color-danger: #df1b41;
+  --color-danger-soft: #fdecef;
+  --color-warning: #a4660a;
+  --color-warning-soft: #fdf3e6;
 
-  /* Type scale. */
-  --text-xs: 0.78rem;
-  --text-sm: 0.875rem;
+  /* Type scale (only the steps the UI uses). */
+  --text-xs: 0.8125rem;
+  --text-sm: 0.9375rem;
   --text-base: 1rem;
-  --text-lg: 1.125rem;
-  --text-xl: 1.375rem;
   --text-2xl: 1.75rem;
-  --text-3xl: 2.25rem;
-  --text-display: clamp(3rem, 8vw, 4.5rem);
 
   --radius-lg: 16px;
-  --radius-md: 12px;
-  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-sm: 7px;
 }
 
 *,
@@ -63,13 +64,13 @@ html {
 
 body {
   margin: 0;
-  background: var(--color-ink-50);
-  color: var(--color-ink-900);
+  background: var(--color-bg);
+  color: var(--color-ink-700);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.6;
-  font-feature-settings: "cv05" 1, "ss01" 1;
+  line-height: 1.5;
   -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
@@ -77,12 +78,13 @@ h1,
 h2,
 h3 {
   margin: 0;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  color: var(--color-ink-900);
+  letter-spacing: -0.021em;
+  line-height: 1.15;
 }
 
 a {
-  color: inherit;
+  color: var(--color-accent);
 }
 
 /* Visible keyboard focus everywhere (a11y floor, non-negotiable). */

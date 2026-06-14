@@ -12,12 +12,20 @@ Skill: `frontend-ui-engineering` (component architecture, design systems, respon
 
 Bar:
 
-- One deliberate type pairing — a real display + body face, not the default system stack — on a
-  clear type scale.
-- Restraint: spend boldness in one signature moment; keep everything around it quiet. Cut
-  decoration that doesn't serve the checkout.
-- Trust is the design job: honest affordances, clear states, no dark patterns. The pay button
-  says exactly what it does (`Pay $49`) and keeps that name through the flow.
+- A deliberate type system on a clear scale. We use **one** high-quality variable sans (Inter,
+  the free analog of Stripe's Söhne) across the whole UI, with hierarchy from weight/size/tracking
+  rather than a second face — a Stripe-aligned choice (see
+  [`decisions/ADR-0006`](decisions/ADR-0006-visual-design-language.md), which supersedes the
+  earlier "display + body pairing" rule).
+- Stripe-aligned palette: navy ink (`#0A2540`), slate body (`#425466`), the blurple accent
+  (`#635BFF`), a cool `#F6F9FC` canvas, and Stripe's error red (`#DF1B41`). Tokens live in
+  `src/styles/global.css`.
+- Restraint: spend boldness in one signature moment (the live total); keep everything around it
+  quiet. Cut decoration that doesn't serve the checkout.
+- Trust is the design job: honest affordances, clear states, no dark patterns, and **no
+  ambiguity** — the visitor always knows the amount, the cadence, and the next step. The CTA says
+  exactly what it does and keeps that name through the flow: `Pay $49` for one-time,
+  `Subscribe · $9.00/mo` for recurring (a subscription must never read as a one-time charge).
 - Quality floor, non-negotiable: responsive to mobile, visible keyboard focus,
   `prefers-reduced-motion` respected, AA contrast.
 - Copy is design material: active-voice actions; errors explain what happened and how to fix it,

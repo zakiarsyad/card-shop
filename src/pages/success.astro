@@ -1,8 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { BRAND } from "../lib/brand";
 ---
 
-<Layout preconnectStripe title="Payment status — Stripe Checkout Lab">
+<Layout preconnectStripe title={`Payment status — ${BRAND.name}`}>
   <main class="page">
     <section class="card" aria-live="polite">
       <div class="icon" id="icon" data-tone="pending" aria-hidden="true"></div>
@@ -94,7 +95,6 @@ import Layout from "../layouts/Layout.astro";
     }
   }
   h1 {
-    font-family: var(--font-display);
     font-weight: 600;
     font-size: var(--text-2xl);
     margin: 0 0 0.5rem;
