@@ -1,25 +1,17 @@
-# How this repo was built
+# How I built this
 
-This project doubles as a demonstration of a markdown-first workflow with an AI coding agent
-(Claude Code).
+I work this project **markdown-first**: the durable context lives in the repo as documents, not
+in my head or a chat log. The same files that make the codebase legible to a reviewer are the
+ones I design and build against — and, deliberately, they double as the context I feed my tooling.
 
-The premise: the agent begins each session with a fresh context window, so the durable context
-has to live in the repo as markdown — not in chat history. These files *are* that context:
+- **`CLAUDE.md`** — the project constitution: stack, conventions, and the hard rules I won't break.
+- **`docs/PRD.md`** — what I'm building, and (just as important) what I'm deliberately not.
+- **`docs/PLAN.md`** + **`docs/TASKS.md`** — the sequenced build I execute and check off.
+- **`docs/decisions/`** — the reasoning, captured so choices survive past the moment I made them.
 
-- **`CLAUDE.md`** — the project constitution the agent reads every session: stack, conventions,
-  and the hard rules it must not break.
-- **`docs/PRD.md`** — what we're building, and (just as important) what we're deliberately not.
-- **`docs/PLAN.md`** + **`docs/TASKS.md`** — the sequenced build the agent executes and checks off.
-- **`docs/decisions/`** — the reasoning, captured so choices survive past the conversation that
-  produced them.
+I built it milestone by milestone (see the git history), spec-first: write the doc, implement
+against it test-first, keep `TASKS.md` in sync, and write decisions up as ADRs instead of leaving
+them buried. Payments choices were grounded in the current Stripe docs rather than memory.
 
-The build proceeded milestone by milestone (see the git history), driven through the
-[`agent-skills`](https://github.com/addyosmani/agent-skills) lifecycle —
-`/spec → /plan → /build → /test → /review → /code-simplify → /ship` — with skills like
-`test-driven-development`, `frontend-ui-engineering`, and `security-and-hardening` activating per
-phase. The docs were written first, then the agent implemented against them test-first, updating
-`TASKS.md` as it went. Decisions that surfaced mid-build were written up as ADRs rather than left
-buried in a chat log.
-
-The takeaway is simple: good documents are good context. The same files that make this repo
-legible to a human reviewer are what made it legible to the agent that helped build it.
+The takeaway is simple: good documents are good context. Writing the spec down first keeps the
+work honest and the intent explicit — equally legible to a teammate, a reviewer, or an assistant.

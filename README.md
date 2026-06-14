@@ -1,4 +1,6 @@
-# Stripe Checkout Lab
+# Checkout
+
+**Live:** [checkout.zakiarsyad.com](https://checkout.zakiarsyad.com)
 
 A minimal, production-minded checkout that sells one product two ways — **one-time purchase**
 or **subscription** — on Astro + Netlify Functions, using Stripe's Payment Element.
@@ -19,15 +21,20 @@ server-authoritative pricing, and complete payment-state handling.
   PaymentIntent client-side; only the server differs. → [`ADR-0003`](docs/decisions/ADR-0003-one-product-two-ways.md)
 - **Server-authoritative pricing.** The client sends a product key, never an amount. →
   [`ADR-0004`](docs/decisions/ADR-0004-server-side-catalog.md)
+- **Astro + Netlify Functions.** Static frontend, serverless endpoints, one deploy target. →
+  [`ADR-0005`](docs/decisions/ADR-0005-astro-netlify-functions.md)
+- **Stripe-aligned visual design.** One sans (Inter), Stripe's palette + blurple. →
+  [`ADR-0006`](docs/decisions/ADR-0006-visual-design-language.md)
+- **Card-only, on purpose.** A focused demo; display is driven by the account's payment-method
+  configuration, not the intent. → [`ADR-0007`](docs/decisions/ADR-0007-card-only-payment-methods.md)
 
 **New to the code?** Start with [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — a 5-minute
 code map: the request lifecycle traced through the actual files, a directory guide, and a
 "where do I change X?" table.
 
 Full reasoning lives in `docs/`. The quality bar — design, engineering, performance, and
-payments depth — is written down in [`docs/STANDARDS.md`](docs/STANDARDS.md). How the project was
-built (markdown-first, driven through the [`agent-skills`](https://github.com/addyosmani/agent-skills)
-lifecycle): [`docs/PROCESS.md`](docs/PROCESS.md).
+payments depth — is written down in [`docs/STANDARDS.md`](docs/STANDARDS.md). How I work the repo
+(spec-driven and markdown-first): [`docs/PROCESS.md`](docs/PROCESS.md).
 
 ## Stack
 

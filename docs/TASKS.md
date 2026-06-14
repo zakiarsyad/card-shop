@@ -11,7 +11,7 @@ can't be done from code alone — they're set up and documented, ready to run.
 - [x] Init Astro + TypeScript project; add Tailwind CSS v4
 - [x] Add Netlify config + functions directory (`netlify.toml`, `netlify/functions/`)
 - [x] Install `stripe` and `@stripe/stripe-js`
-- [ ] Create a test Product + two Prices in Stripe; record the Price IDs **(you)**
+- [x] Create a test Product + two Prices in Stripe; record the Price IDs
 - [x] Create `.env.example`; create `.env`; add `.env` to `.gitignore`
 
 ## M1 — Catalog + one-time intent
@@ -48,11 +48,13 @@ can't be done from code alone — they're set up and documented, ready to run.
 
 - [x] Loading + trust states; error-taxonomy UX
 - [x] Accessibility pass: keyboard, visible focus, reduced motion, AA contrast
-- [x] Performance: static-by-default, ~5 KB gz product-page JS (budget 30 KB)
+- [x] Performance: static-by-default, ~3 KB gz product-page JS (budget 30 KB)
 - [x] Defer Stripe.js to point-of-pay; `preconnect` to Stripe
 - [x] Review + simplify pass over the codebase
 - [x] Finalize README + diagram + production-notes section
-- [ ] Lighthouse run on the deployed URL (≥ 95 / LCP < 1.5s / CLS < 0.05) **(you)**
-- [ ] Deploy to Netlify; set env vars in the dashboard **(you)**
-- [ ] Register the production webhook; set `STRIPE_WEBHOOK_SECRET` **(you)**
-- [ ] Verify both flows on the deployed test-mode URL **(you)**
+- [x] Deploy to Netlify ([checkout.zakiarsyad.com](https://checkout.zakiarsyad.com)); env vars set
+- [x] Register the production webhook; set `STRIPE_WEBHOOK_SECRET`
+- [x] Card-only payment methods for a clear demo (see ADR-0007)
+- [x] Lighthouse (mobile, production build): Perf/A11y/Best-Practices/SEO all 100; LCP ~1.5s, CLS 0
+- [ ] Re-run Lighthouse against the live URL for real CDN/network numbers **(you, optional)**
+- [ ] Verify both flows in-browser on the deployed URL **(you)**

@@ -25,21 +25,29 @@ Both purchase flows converge on one client step: confirming a PaymentIntent with
 
 Reasoning lives in `docs/decisions/`.
 
-## Project structure (target)
+## Project structure (as built)
+
+The Payment Element is a **vanilla-TS island, not a React component** (kept that
+way to meet the performance budget — see ADR-0006 / STANDARDS). Full code map and
+"where do I change X" live in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 
 ```
 src/
   pages/
-    index.astro          # product page: one-time / subscribe toggle
+    index.astro          # thin composition of the two columns
     success.astro        # reads PaymentIntent status (does NOT fulfill)
-  components/
-    CheckoutForm.tsx      # Payment Element + shared confirm + state handling
-  lib/
-    catalog.ts            # server-side product/price catalog
+  components/            # UI in components (markup + scoped CSS)
+    Checkout.astro        # the card: Payment Element mount, shared confirm, states
+    PlanOption.astro / DemoIntro.astro / TestCards.astro / TrustNote.astro
+  scripts/              # browser islands (vanilla TS)
+    checkout.ts           # loads Stripe.js, mounts the Element, confirms
+    test-cards.ts / success.ts
+  lib/                   # pure, tested domain logic (catalog, money, errors, …)
 netlify/functions/
   create-payment-intent.ts # one-time
   create-subscription.ts   # recurring
   stripe-webhook.ts        # both event sets; fulfillment lives here
+  _shared/                 # stripe client, http helpers, shared request parsing
 .env.example
 .gitignore
 ```

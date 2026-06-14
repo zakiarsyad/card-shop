@@ -1,4 +1,4 @@
-# PRD — Stripe Checkout Lab
+# PRD — Checkout
 
 **Status:** Accepted
 **Date:** 2026-06-13
