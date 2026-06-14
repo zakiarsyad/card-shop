@@ -1,5 +1,5 @@
 {
-  "name": "stripe-checkout-lab",
+  "name": "card-checkout",
   "type": "module",
   "version": "0.1.0",
   "private": true,
@@ -17,7 +17,6 @@
     "typecheck": "astro check"
   },
   "dependencies": {
-    "@astrojs/netlify": "^7.0.13",
     "@fontsource-variable/inter": "^5.2.8",
     "@fontsource/fraunces": "^5.2.9",
     "@stripe/stripe-js": "^9.8.0",

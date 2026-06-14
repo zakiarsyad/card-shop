@@ -16,7 +16,7 @@ export function getStripe(env: Record<string, string | undefined> = process.env)
     throw new Error("Live Stripe keys are not allowed in this project (test mode only)");
   }
   return new Stripe(key, {
-    appInfo: { name: "stripe-checkout-lab", version: "0.1.0" },
+    appInfo: { name: "card-checkout", version: "0.1.0", url: "https://checkout.zakiarsyad.com" },
     maxNetworkRetries: 2,
   });
 }
