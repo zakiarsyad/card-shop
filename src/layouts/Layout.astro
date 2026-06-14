@@ -1,9 +1,9 @@
 ---
-// Self-hosted fonts (no external request, no layout shift).
+// Self-hosted font (no external request, no layout shift). One variable family
+// — Inter — used across the whole UI, the Stripe-vibe sans. See ADR-0006.
 import "@fontsource-variable/inter";
-import "@fontsource/fraunces/400.css";
-import "@fontsource/fraunces/600.css";
 import "../styles/global.css";
+import { BRAND } from "../lib/brand";
 
 interface Props {
   title?: string;
@@ -16,10 +16,25 @@ interface Props {
 }
 
 const {
-  title = "Stripe Checkout Lab",
-  description = "A minimal, production-minded Stripe checkout — one product, two ways. Built with Astro, Netlify Functions, and the Payment Element.",
+  title = BRAND.name,
+  description = BRAND.description,
   preconnectStripe = false,
 } = Astro.props;
+
+const canonical = new URL(Astro.url.pathname, BRAND.url).href;
+
+// Structured data for search / answer engines: what this is, who made it, and
+// where the source lives. Kept honest — a demo, with the repo as sameAs.
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: BRAND.name,
+  url: BRAND.url,
+  description: BRAND.description,
+  inLanguage: "en",
+  author: { "@type": "Person", name: BRAND.author },
+  sameAs: [BRAND.repo],
+};
 ---
 
 <!doctype html>
@@ -30,12 +45,16 @@ const {
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>{title}</title>
     <meta name="description" content={description} />
+    <meta name="author" content={BRAND.author} />
+    <link rel="canonical" href={canonical} />
     <meta name="color-scheme" content="light" />
-    <meta name="theme-color" content="#fafaf9" />
+    <meta name="theme-color" content="#f6f9fc" />
 
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={BRAND.name} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
 
     {
       preconnectStripe && (
@@ -47,6 +66,7 @@ const {
     }
 
     <meta name="generator" content={Astro.generator} />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} is:inline />
   </head>
   <body>
     <slot />
