@@ -48,6 +48,6 @@ export async function parseCheckoutRequest(
 }
 
 /** Trust a client-supplied idempotency token for retry-dedupe, else mint one. */
-export function resolveIdempotencyKey(value: unknown): string {
+function resolveIdempotencyKey(value: unknown): string {
   return typeof value === "string" && value.length >= 8 ? value : crypto.randomUUID();
 }

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parseCheckoutRequest, resolveIdempotencyKey } from "./checkout";
+import { parseCheckoutRequest } from "./checkout";
 
 const post = (body: unknown) =>
   new Request("http://localhost/fn", {
@@ -45,14 +45,13 @@ describe("parseCheckoutRequest", () => {
     expect(r.status).toBe(400);
     expect((await r.json()).error.code).toBe("wrong_endpoint");
   });
-});
 
-describe("resolveIdempotencyKey", () => {
-  it("keeps a sufficiently long client token", () => {
-    expect(resolveIdempotencyKey("abcd-efgh")).toBe("abcd-efgh");
-  });
-  it("mints a fresh key for missing or too-short tokens", () => {
-    expect(resolveIdempotencyKey(undefined).length).toBeGreaterThanOrEqual(8);
-    expect(resolveIdempotencyKey("short")).not.toBe("short");
+  it("preserves a long client idempotency token but mints one for short/missing", async () => {
+    const kept = await parseCheckoutRequest(post({ plan: "one_time", idempotencyKey: "abcd-efgh-1" }), "payment");
+    const minted = await parseCheckoutRequest(post({ plan: "one_time", idempotencyKey: "short" }), "payment");
+    if (kept instanceof Response || minted instanceof Response) throw new Error("expected parsed");
+    expect(kept.idempotencyKey).toBe("abcd-efgh-1");
+    expect(minted.idempotencyKey).not.toBe("short");
+    expect(minted.idempotencyKey.length).toBeGreaterThanOrEqual(8);
   });
 });
