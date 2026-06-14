@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "@netlify/functions";
 import Stripe from "stripe";
-import handler from "./stripe-webhook";
+import handler from "../stripe-webhook";
 
 const ctx = {} as Context;
 const SECRET = "whsec_test_secret";

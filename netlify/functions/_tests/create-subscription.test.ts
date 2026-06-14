@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "@netlify/functions";
 
-vi.mock("./_shared/stripe", () => ({ getStripe: vi.fn() }));
-import { getStripe } from "./_shared/stripe";
-import handler from "./create-subscription";
+vi.mock("../_shared/stripe", () => ({ getStripe: vi.fn() }));
+import { getStripe } from "../_shared/stripe";
+import handler from "../create-subscription";
 
 const ctx = {} as Context;
 const post = (body: unknown) =>

@@ -2,9 +2,9 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Context } from "@netlify/functions";
 
 // Mock the Stripe client so the handler runs without network.
-vi.mock("./_shared/stripe", () => ({ getStripe: vi.fn() }));
-import { getStripe } from "./_shared/stripe";
-import handler from "./create-payment-intent";
+vi.mock("../_shared/stripe", () => ({ getStripe: vi.fn() }));
+import { getStripe } from "../_shared/stripe";
+import handler from "../create-payment-intent";
 
 const ctx = {} as Context;
 const post = (body: unknown) =>
