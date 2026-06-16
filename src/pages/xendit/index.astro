@@ -1,0 +1,61 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { BRAND } from "../../lib/brand";
+import DemoIntro from "../../components/xendit/DemoIntro.astro";
+import Checkout from "../../components/xendit/Checkout.astro";
+---
+
+<Layout provider="xendit" title={`${BRAND.name} — a Xendit checkout demo`}>
+  <main class="page">
+    <!-- Left: what it is + how to run it -->
+    <section class="info" aria-labelledby="demo-title">
+      <DemoIntro />
+    </section>
+
+    <!-- Right: the live checkout -->
+    <section class="checkout" aria-label="Checkout">
+      <Checkout />
+      <a class="readmore" href="/">← All demos</a>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .page {
+    min-height: 100dvh;
+    max-width: 900px;
+    margin-inline: auto;
+    padding: clamp(1.5rem, 5vw, 3rem) clamp(1rem, 4vw, 2rem);
+    display: grid;
+    gap: clamp(1.75rem, 4vw, 3rem);
+  }
+  @media (min-width: 860px) {
+    .page {
+      grid-template-columns: 1fr 400px;
+      align-items: start;
+    }
+  }
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .checkout {
+    width: 100%;
+    max-width: 30rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  .readmore {
+    align-self: center;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    color: var(--color-accent-strong);
+    text-decoration: none;
+  }
+  .readmore:hover {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+</style>

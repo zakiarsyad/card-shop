@@ -1,0 +1,227 @@
+---
+import { PLANS, PRODUCT_NAME, priceFor } from "../../lib/catalog";
+import { formatAmount } from "../../lib/money";
+import PlanOption from "../PlanOption.astro";
+import TrustNote from "../TrustNote.astro";
+
+const oneTime = PLANS.one_time;
+const sub = PLANS.subscription;
+const oneTimeIdr = priceFor(oneTime, "xendit");
+const subIdr = priceFor(sub, "xendit");
+const oneTimePrice = formatAmount(oneTimeIdr.amount, oneTimeIdr.currency, "id-ID");
+const subPrice = formatAmount(subIdr.amount, subIdr.currency, "id-ID");
+---
+
+<section class="card" aria-labelledby="product-title">
+  <p class="card__tag">Sample product</p>
+  <h2 id="product-title" class="card__title">{PRODUCT_NAME}</h2>
+  <p class="card__lede">
+    A sample digital product, so you can run a real Xendit checkout end to end.
+  </p>
+
+  <fieldset class="plans">
+    <legend class="sr-only">Choose how to pay</legend>
+    <PlanOption plan={oneTime} price={oneTimeIdr} locale="id-ID" checked />
+    <PlanOption plan={sub} price={subIdr} locale="id-ID" />
+  </fieldset>
+
+  <div class="total">
+    <span class="total__label">Total due today</span>
+    <span class="total__amount" id="total-amount">{oneTimePrice}</span>
+  </div>
+  <p class="recurring" id="recurring-note" hidden>Then {subPrice} every month.</p>
+
+  <div id="payment-section" hidden>
+    <div id="xendit-payment" aria-label="Card details"></div>
+  </div>
+
+  <p id="status" class="status" role="status" aria-live="polite" hidden></p>
+  <p id="error" class="error" role="alert" aria-live="assertive" hidden></p>
+
+  <button id="primary" class="btn" type="button">
+    Continue to payment
+  </button>
+
+  <TrustNote name="Xendit" />
+
+  <!-- 3-D Secure renders in a centered modal overlay (not inline below the form),
+       so the challenge reads like a hosted step. -->
+  <div class="action-modal" id="xendit-action-modal" hidden>
+    <div class="action-modal__panel">
+      <p class="action-modal__title">Verify your payment</p>
+      <div id="xendit-action"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initCheckout } from "../../scripts/xendit/checkout";
+  initCheckout();
+</script>
+
+<style>
+  .card {
+    background: var(--color-paper);
+    border: 1px solid var(--color-ink-200);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.5rem, 4vw, 2rem);
+    box-shadow:
+      0 1px 1px rgb(10 37 64 / 0.04),
+      0 10px 30px -12px rgb(10 37 64 / 0.14);
+  }
+  .card__tag {
+    margin: 0 0 0.4rem;
+    font-size: var(--text-xs);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-accent-strong);
+  }
+  .card__title {
+    font-weight: 640;
+    font-size: var(--text-2xl);
+    margin: 0 0 0.3rem;
+  }
+  .card__lede {
+    margin: 0 0 1.5rem;
+    color: var(--color-ink-500);
+    font-size: var(--text-sm);
+    line-height: 1.5;
+  }
+  .plans {
+    border: 0;
+    margin: 0 0 1.5rem;
+    padding: 0;
+    display: grid;
+    gap: 0.625rem;
+  }
+  .total {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--color-ink-200);
+  }
+  .total__label {
+    color: var(--color-ink-700);
+    font-size: var(--text-sm);
+    font-weight: 500;
+  }
+  .total__amount {
+    font-weight: 700;
+    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    color: var(--color-ink-900);
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .recurring {
+    margin: 0.5rem 0 0;
+    font-size: var(--text-xs);
+    color: var(--color-ink-500);
+  }
+  #payment-section {
+    margin-top: 1.5rem;
+  }
+  .status,
+  .error {
+    font-size: var(--text-sm);
+    line-height: 1.45;
+    border-radius: var(--radius-sm);
+    padding: 0.75rem 0.875rem;
+    margin: 1rem 0 0;
+  }
+  .status {
+    background: var(--color-accent-soft);
+    color: var(--color-accent-strong);
+  }
+  .error {
+    background: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+  .error :global(strong) {
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+  .btn {
+    width: 100%;
+    margin-top: 1.5rem;
+    border: 0;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: #fff;
+    font: inherit;
+    font-weight: 600;
+    font-size: var(--text-base);
+    padding: 0.9rem 1rem;
+    cursor: pointer;
+    transition:
+      background 0.15s ease,
+      transform 0.05s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 3rem;
+  }
+  .btn:hover:not(:disabled) {
+    background: var(--color-accent-strong);
+  }
+  .btn:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+  .btn:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+  }
+  .btn[data-busy="true"] .btn__spinner {
+    display: inline-block;
+  }
+  .btn__spinner {
+    display: none;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgb(255 255 255 / 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  /* 3-D Secure modal */
+  .action-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: center;
+    padding: 1rem;
+    background: rgb(10 37 64 / 0.55);
+  }
+  .action-modal[hidden] {
+    display: none;
+  }
+  .action-modal__panel {
+    background: var(--color-paper);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    width: 100%;
+    max-width: 420px;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 60px -15px rgb(10 37 64 / 0.4);
+  }
+  .action-modal__title {
+    margin: 0 0 0.75rem;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--color-ink-900);
+  }
+  /* Reserve room so the challenge iframe has space to render. */
+  .action-modal #xendit-action {
+    min-height: 18rem;
+  }
+</style>

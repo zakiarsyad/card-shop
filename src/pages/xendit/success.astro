@@ -1,0 +1,92 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { BRAND } from "../../lib/brand";
+// Display-only (ADR-0002): fulfillment happens on Xendit's callback, not here.
+// Static success — we only land here after the SDK's `session-complete` event.
+---
+
+<Layout provider="xendit" title={`Payment status — ${BRAND.name}`}>
+  <main class="page">
+    <section class="card">
+      <div class="icon" aria-hidden="true"></div>
+      <h1>Payment successful</h1>
+      <p class="message">Thanks — your payment went through.</p>
+      <p class="note">
+        Your payment is confirmed. We fulfill the order on our server once we
+        receive Xendit's webhook — a reliable server-to-server signal.
+      </p>
+      <a class="btn" href="/xendit">Back to checkout</a>
+    </section>
+  </main>
+</Layout>
+
+<style>
+  .page {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: clamp(1rem, 4vw, 2.5rem);
+  }
+  .card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--color-paper);
+    border: 1px solid var(--color-ink-200);
+    border-radius: var(--radius-lg);
+    padding: clamp(1.75rem, 5vw, 2.5rem);
+    text-align: center;
+    box-shadow:
+      0 1px 2px rgb(12 10 9 / 0.04),
+      0 12px 32px -12px rgb(12 10 9 / 0.12);
+  }
+  .icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin: 0 auto 1.25rem;
+    display: grid;
+    place-items: center;
+    background: var(--color-success-soft);
+  }
+  .icon::after {
+    content: "";
+    display: block;
+    width: 22px;
+    height: 12px;
+    border-left: 3px solid var(--color-success);
+    border-bottom: 3px solid var(--color-success);
+    transform: translateY(-2px) rotate(-45deg);
+  }
+  h1 {
+    font-weight: 600;
+    font-size: var(--text-2xl);
+    margin: 0 0 0.5rem;
+  }
+  .message {
+    color: var(--color-ink-500);
+    margin: 0 0 1.5rem;
+    font-size: var(--text-sm);
+  }
+  .note {
+    text-align: left;
+    font-size: var(--text-sm);
+    color: var(--color-ink-500);
+    background: var(--color-ink-100);
+    border-radius: var(--radius-md);
+    padding: 1rem 1.1rem;
+    margin: 0 0 1.5rem;
+    line-height: 1.65;
+  }
+  .btn {
+    display: inline-block;
+    border-radius: var(--radius-md);
+    background: var(--color-accent);
+    color: #fff;
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    text-decoration: none;
+  }
+  .btn:hover {
+    background: var(--color-accent-strong);
+  }
+</style>
