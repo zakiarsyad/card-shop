@@ -2,14 +2,17 @@
 
 **Live:** [checkout.zakiarsyad.com](https://checkout.zakiarsyad.com)
 
-A minimal, production-minded checkout that sells one product two ways — **one-time purchase**
-or **subscription** — on Astro + Netlify Functions, using Stripe's Payment Element.
+A set of checkout demos — the **same** product (sold **one-time** or by **subscription**) built
+once per payment provider, each under its own subpath and in its own brand, on a shared
+Astro + Netlify Functions shell.
+
+- **`/stripe`** — built, on Stripe's Payment Element. *(Adyen and Xendit are planned.)*
 
 Built as a portfolio piece. The goal isn't feature breadth; it's the judgment that separates a
 real payments integration from a tutorial: webhook-driven fulfillment, idempotency,
 server-authoritative pricing, and complete payment-state handling.
 
-> Runs in Stripe **test mode** only. No real money moves.
+> Runs in **test mode** only. No real money moves.
 
 ## Why it's built this way
 
@@ -29,6 +32,10 @@ server-authoritative pricing, and complete payment-state handling.
   configuration, not the intent. → [`ADR-0007`](docs/decisions/ADR-0007-card-only-payment-methods.md)
 - **The webhook is observable.** The success page shows a live indicator that confirms when Stripe's
   webhook for the payment reached the server. → [`ADR-0008`](docs/decisions/ADR-0008-webhook-received-indicator.md)
+- **One app, per-provider subpaths.** A shared design system + domain core; each provider is its own
+  implementation, not a leaky shared abstraction. → [`ADR-0009`](docs/decisions/ADR-0009-multi-provider-structure.md)
+- **Per-provider theming via tokens.** Same components, brand swapped through CSS custom properties. →
+  [`ADR-0010`](docs/decisions/ADR-0010-per-provider-theming.md)
 
 **New to the code?** Start with [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — a 5-minute
 code map: the request lifecycle traced through the actual files, a directory guide, and a
@@ -42,11 +49,11 @@ payments depth — is written down in [`docs/STANDARDS.md`](docs/STANDARDS.md). 
 
 Astro · TypeScript · Tailwind CSS v4 · Netlify Functions · Stripe (Payment Element + Node SDK)
 
-## Architecture
+## Architecture (the Stripe flow)
 
 ```
             choose plan
- [product page] ──────────────┐
+ [  /stripe  ] ──────────────┐
                               ▼
         one-time ──► /create-payment-intent ──┐
                                               ├──► client_secret
@@ -69,10 +76,13 @@ create that intent differently.
 Prerequisites: Node 20+, a Stripe account (test mode), the Stripe CLI.
 
 1. `npm install`
-2. `cp .env.example .env` and fill in your test keys + Price IDs
-3. `npm run dev`
-4. Forward webhooks locally:
-   `stripe listen --forward-to localhost:8888/.netlify/functions/stripe-webhook`
+2. `cp .env.example .env` and fill in your test keys + Price IDs (Stripe; Xendit keys for `/xendit`)
+3. `npm run dev` — serves **HTTPS** at `https://localhost:8888` (a self-signed cert is
+   auto-generated into `.cert/`; accept the browser warning once). Dev is HTTPS on purpose:
+   **Xendit Components requires an HTTPS origin even in test mode**, so the Xendit checkout
+   can't run on `http://localhost`.
+4. Forward Stripe webhooks locally (note `https` + `--skip-verify` for the self-signed cert):
+   `stripe listen --forward-to https://localhost:8888/.netlify/functions/stripe-webhook --skip-verify`
    then put the printed signing secret in `STRIPE_WEBHOOK_SECRET`
 
 ### Test cards

@@ -1,8 +1,8 @@
 ---
-import { PLANS, PRODUCT_NAME } from "../lib/catalog";
-import { formatAmount } from "../lib/money";
-import PlanOption from "./PlanOption.astro";
-import TrustNote from "./TrustNote.astro";
+import { PLANS, PRODUCT_NAME } from "../../lib/catalog";
+import { formatAmount } from "../../lib/money";
+import PlanOption from "../PlanOption.astro";
+import TrustNote from "../TrustNote.astro";
 
 const sub = PLANS.subscription;
 const oneTime = PLANS.one_time;
@@ -38,15 +38,15 @@ const oneTime = PLANS.one_time;
   <p id="status" class="status" role="status" aria-live="polite" hidden></p>
   <p id="error" class="error" role="alert" aria-live="assertive" hidden></p>
 
-  <button id="primary" class="btn" type="button" data-phase="select">
+  <button id="primary" class="btn" type="button">
     Continue to payment
   </button>
 
-  <TrustNote />
+  <TrustNote name="Stripe" />
 </section>
 
 <script>
-  import { initCheckout } from "../scripts/checkout";
+  import { initCheckout } from "../../scripts/stripe/checkout";
   initCheckout();
 </script>
 

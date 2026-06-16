@@ -2,7 +2,7 @@ import type { Context } from "@netlify/functions";
 import { getStripe } from "./_shared/stripe";
 import { json, errorResponse, methodNotAllowed } from "./_shared/http";
 import { createLogger } from "../../src/lib/log";
-import { isHandledEvent, decideFulfillment } from "../../src/lib/webhook-events";
+import { isHandledEvent, decideFulfillment } from "../../src/lib/stripe/webhook-events";
 import { createMemoryStore, processOnce } from "../../src/lib/idempotency";
 import { markPaymentSeen } from "./_shared/webhook-store";
 

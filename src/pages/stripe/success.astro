@@ -1,9 +1,9 @@
 ---
-import Layout from "../layouts/Layout.astro";
-import { BRAND } from "../lib/brand";
+import Layout from "../../layouts/Layout.astro";
+import { BRAND } from "../../lib/brand";
 ---
 
-<Layout preconnectStripe title={`Payment status — ${BRAND.name}`}>
+<Layout preconnectStripe provider="stripe" title={`Payment status — ${BRAND.name}`}>
   <main class="page">
     <section class="card" aria-live="polite">
       <div class="icon" id="icon" data-tone="pending" aria-hidden="true"></div>
@@ -27,12 +27,12 @@ import { BRAND } from "../lib/brand";
         Shown only for this demo — customers never see this.
       </p>
 
-      <a class="btn" href="/">Back to checkout</a>
+      <a class="btn" href="/stripe">Back to checkout</a>
     </section>
   </main>
 
   <script>
-    import { renderSuccess } from "../scripts/success";
+    import { renderSuccess } from "../../scripts/stripe/success";
     renderSuccess();
   </script>
 </Layout>

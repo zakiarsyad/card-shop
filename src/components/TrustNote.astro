@@ -1,5 +1,10 @@
 ---
-// Static reassurance shown under the pay button.
+// Static reassurance shown under the pay button. Shared across providers.
+interface Props {
+  /** Provider name shown after "Secured by". */
+  name: string;
+}
+const { name } = Astro.props;
 ---
 
 <p class="trust">
@@ -9,7 +14,7 @@
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <rect x="3" y="11" width="18" height="11" rx="2"></rect>
         <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-      </svg> Secured by Stripe</span>
+      </svg> Secured by {name}</span>
     <span class="trust__sub">test mode — your card is never charged</span>
   </span>
 </p>

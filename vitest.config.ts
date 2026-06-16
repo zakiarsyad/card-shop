@@ -6,9 +6,4 @@ export default defineConfig({
     environment: "node",
     include: ["src/**/*.test.ts", "netlify/**/*.test.ts"],
   },
-  resolve: {
-    alias: {
-      "@lib": new URL("./src/lib", import.meta.url).pathname,
-    },
-  },
 });

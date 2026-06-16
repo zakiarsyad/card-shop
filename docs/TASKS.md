@@ -58,3 +58,37 @@ can't be done from code alone — they're set up and documented, ready to run.
 - [x] Lighthouse (mobile, production build): Perf/A11y/Best-Practices/SEO all 100; LCP ~1.5s, CLS 0
 - [ ] Re-run Lighthouse against the live URL for real CDN/network numbers **(you, optional)**
 - [ ] Verify both flows in-browser on the deployed URL **(you)**
+
+## M6 — Multi-provider shell
+
+- [x] Move the Stripe checkout under `/stripe` (pages, components, scripts)
+- [x] Landing hub at `/` linking to each provider (Adyen/Xendit "coming soon")
+- [x] Per-provider theming hook: Layout `provider` prop → `data-provider` tokens
+- [x] ADR-0009 (structure) + ADR-0010 (theming); reframe README / ARCHITECTURE / CLAUDE
+
+## M7 — Xendit (one-time built)
+
+- [x] Verify Xendit's Components API (Payment Sessions, `mode: COMPONENTS`, callback token) in the docs
+- [x] Create a Xendit test account + key **(you)**
+- [x] Per-provider catalog pricing (IDR) + `priceFor`; IDR formatted as whole rupiah
+- [x] `xendit-create-session` function (Basic auth, test-key guard) + request-builder tests
+- [x] `/xendit` page + Components island (cards-only, inline 3-D Secure) + Xendit brand theme
+- [x] End-to-end browser test — **verified over an HTTPS cloudflared tunnel**: card `4000 0000 0000 1000`
+      → Components form → Pay → `/xendit/success`. (Xendit Components requires HTTPS, so it can't run on
+      `http://localhost` — it works on the deployed HTTPS site; the dev tunnel needs `allowedHosts` in astro.config.)
+- [x] `xendit-webhook` — `x-callback-token` verification + `payment.capture` → fulfillment routing
+      (auth + fulfillment verified locally; cross-instance replay-safety is the same in-memory
+      demo-scope as the Stripe webhook — durable store for prod)
+- [x] Xendit brand theme (`#0066FF`) via `data-provider` tokens; no "Stripe" wording on the page
+- [x] Test-card panel notes Xendit's "Simulate scenario" button
+- [x] 3-D Secure renders in a centered modal overlay (not inline below the form)
+- [x] Subscription parity — plan toggle + `session_type: "SUBSCRIPTION"` (monthly schedule + demo customer);
+      session creation verified live for both plans. (Subscription completes via Xendit's card-save
+      verification step — shown in the modal; confirm interactively in a real browser.)
+- [x] Namespace per provider: `lib/stripe`/`lib/xendit`, `stripe-*`/`xendit-*` functions; shared
+      code stays unprefixed (`lib/` core, `PlanOption`/`TrustNote`, `scripts/test-cards.ts`, `_shared/`)
+- [ ] Live success indicator on `/xendit/success` (webhook receipt marker + poll), like Stripe
+
+## M8 — Adyen (deferred)
+
+- [ ] Deferred — a test account is hard to obtain. Build `/adyen` (Drop-in + webhook HMAC) when available.

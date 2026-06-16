@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getPlan, isPlanKey, priceIdFor, PLANS } from "./catalog";
+import { getPlan, isPlanKey, priceIdFor, priceFor, PLANS } from "./catalog";
 
 describe("getPlan", () => {
   it("resolves known plans with authoritative amounts", () => {
@@ -42,11 +42,23 @@ describe("priceIdFor", () => {
   });
 });
 
+describe("priceFor", () => {
+  it("returns the provider override, else falls back to the default price", () => {
+    const oneTime = getPlan("one_time");
+    expect(priceFor(oneTime, "stripe")).toEqual({ amount: 4900, currency: "usd" });
+    expect(priceFor(oneTime, "xendit")).toEqual({ amount: 750000, currency: "idr" });
+  });
+});
+
 describe("catalog integrity", () => {
-  it("every plan amount is a non-negative integer (minor units)", () => {
+  it("every amount (default + per-provider) is a non-negative integer (minor units)", () => {
     for (const plan of Object.values(PLANS)) {
       expect(Number.isInteger(plan.amount)).toBe(true);
       expect(plan.amount).toBeGreaterThanOrEqual(0);
+      for (const price of Object.values(plan.prices ?? {})) {
+        expect(Number.isInteger(price.amount)).toBe(true);
+        expect(price.amount).toBeGreaterThanOrEqual(0);
+      }
     }
   });
 });

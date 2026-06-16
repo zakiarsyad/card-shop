@@ -8,7 +8,7 @@ import {
   extractSubscriptionClientSecret,
   subscriptionPeriodEnd,
   type SubscriptionLike,
-} from "../../src/lib/subscription";
+} from "../../src/lib/stripe/subscription";
 import { createLogger } from "../../src/lib/log";
 
 /**

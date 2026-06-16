@@ -13,12 +13,18 @@ interface Props {
    * pay the connection cost on pages that never touch it.
    */
   preconnectStripe?: boolean;
+  /**
+   * Provider namespace for per-brand theming. Sets `data-provider` on <html>;
+   * each provider overrides design tokens under that selector (global.css).
+   */
+  provider?: string;
 }
 
 const {
   title = BRAND.name,
   description = BRAND.description,
   preconnectStripe = false,
+  provider,
 } = Astro.props;
 
 const canonical = new URL(Astro.url.pathname, BRAND.url).href;
@@ -38,7 +44,7 @@ const jsonLd = {
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-provider={provider}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

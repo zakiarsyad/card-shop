@@ -4,9 +4,17 @@ Project context for Claude Code. Read this first, then `docs/PLAN.md` and `docs/
 
 ## What this is
 
-A minimal, production-minded Stripe checkout that sells one digital product two ways — a
+A minimal, production-minded checkout that sells one digital product two ways — a
 one-time purchase and a recurring subscription. It's a portfolio piece: the point is to
 demonstrate engineering judgment in payments, not feature breadth. Full intent in `docs/PRD.md`.
+
+The same product is built once **per payment provider** under its own subpath (`/stripe`,
+`/adyen`, `/xendit`), sharing the design system + `lib/` core but not a payments abstraction —
+the providers' flows don't share a model ([ADR-0009](docs/decisions/ADR-0009-multi-provider-structure.md)).
+**Stripe and Xendit are built; Adyen is planned.** `/` is a hub linking to each. Code is
+namespaced per provider (`pages/<p>/`, `components/<p>/`, `scripts/<p>/`, `lib/<p>/`, and
+`<p>-*` functions); shared primitives stay unprefixed. Most rules below describe Stripe but
+apply equally to Xendit.
 
 ## Stack
 
@@ -34,20 +42,23 @@ way to meet the performance budget — see ADR-0006 / STANDARDS). Full code map 
 ```
 src/
   pages/
-    index.astro          # thin composition of the two columns
-    success.astro        # reads PaymentIntent status (does NOT fulfill)
-  components/            # UI in components (markup + scoped CSS)
-    Checkout.astro        # the card: Payment Element mount, shared confirm, states
-    PlanOption.astro / DemoIntro.astro / TestCards.astro / TrustNote.astro
-  scripts/              # browser islands (vanilla TS)
-    checkout.ts           # loads Stripe.js, mounts the Element, confirms
-    test-cards.ts / success.ts
-  lib/                   # pure, tested domain logic (catalog, money, errors, …)
-netlify/functions/
-  create-payment-intent.ts # one-time
-  create-subscription.ts   # recurring
-  stripe-webhook.ts        # both event sets; fulfillment lives here
-  _shared/                 # stripe client, http helpers, shared request parsing
+    index.astro          # landing hub (links to each provider) — SHARED
+    stripe/ , xendit/    # each: index.astro (checkout) + success.astro
+  components/
+    PlanOption.astro      # reusable plan row (per-provider price/locale) — SHARED
+    TrustNote.astro       # "Secured by {provider}" — SHARED
+    stripe/ , xendit/     # provider-flavoured UI (Checkout, DemoIntro, …)
+  scripts/
+    test-cards.ts         # click-to-copy chips — SHARED
+    stripe/ , xendit/     # browser islands (vanilla TS): checkout (+ stripe success)
+  lib/                   # catalog/money/idempotency/log/brand SHARED;
+    stripe/ , xendit/    #   provider domain logic (payment-state/errors/… ; session/webhook)
+  layouts/Layout.astro   # <head>, SEO, `provider` prop → per-brand theming (ADR-0010)
+netlify/functions/       # prefixed per provider (stripe-* / xendit-*)
+  stripe-create-payment-intent.ts / stripe-create-subscription.ts
+  stripe-webhook.ts / stripe-webhook-status.ts
+  xendit-create-session.ts / xendit-webhook.ts
+  _shared/                 # stripe.ts / xendit.ts clients, http helpers, request parsing
 .env.example
 .gitignore
 ```

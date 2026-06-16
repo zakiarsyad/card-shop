@@ -4,11 +4,13 @@
  * zero-decimal currencies; never floats."
  */
 
-// Currencies Stripe treats as having no minor unit (amount == major unit).
-// https://docs.stripe.com/currencies#zero-decimal
+// Currencies treated as having no minor unit (amount == major unit).
+// The base list is Stripe's zero-decimal set (https://docs.stripe.com/currencies#zero-decimal).
+// `idr` is added for Xendit: it expects whole-rupiah integer amounts (no sen),
+// so we treat Rp as having no minor unit here — we only use IDR for Xendit.
 const ZERO_DECIMAL_CURRENCIES = new Set([
-  "bif", "clp", "djf", "gnf", "jpy", "kmf", "krw", "mga", "pyg",
-  "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf",
+  "bif", "clp", "djf", "gnf", "idr", "jpy", "kmf", "krw", "mga",
+  "pyg", "rwf", "ugx", "vnd", "vuv", "xaf", "xof", "xpf",
 ]);
 
 export function isZeroDecimalCurrency(currency: string): boolean {

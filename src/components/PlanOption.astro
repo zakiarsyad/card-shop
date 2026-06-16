@@ -1,13 +1,18 @@
 ---
-import { intervalSuffix, type Plan } from "../lib/catalog";
+import { intervalSuffix, type Plan, type Price } from "../lib/catalog";
 import { formatAmount } from "../lib/money";
 
 interface Props {
   plan: Plan;
   checked?: boolean;
+  /** Override the displayed price (e.g. a provider's regional price). */
+  price?: Price;
+  /** Locale for currency formatting. */
+  locale?: string;
 }
 
-const { plan, checked = false } = Astro.props;
+const { plan, checked = false, price, locale = "en-US" } = Astro.props;
+const { amount, currency } = price ?? { amount: plan.amount, currency: plan.currency };
 const per = intervalSuffix(plan.interval);
 ---
 
@@ -18,7 +23,7 @@ const per = intervalSuffix(plan.interval);
     <span class="plan__note">{plan.note}</span>
   </span>
   <span class="plan__price">
-    {formatAmount(plan.amount, plan.currency)}{
+    {formatAmount(amount, currency, locale)}{
       plan.interval && <span class="plan__per">{per}</span>
     }
   </span>

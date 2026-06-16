@@ -2,7 +2,7 @@
  * Success page controller. Reads the PaymentIntent status for *display only* —
  * it never fulfills (fulfillment is the webhook's job; ADR-0002).
  */
-import { statusToUiState, STATE_COPY, type PaymentIntentStatus, type UiState } from "../lib/payment-state";
+import { statusToUiState, STATE_COPY, type PaymentIntentStatus, type UiState } from "../../lib/stripe/payment-state";
 
 const TONE: Record<string, string> = {
   succeeded: "succeeded",
@@ -146,7 +146,7 @@ function watchWebhook(paymentIntentId: string | null): void {
   const poll = async () => {
     tries += 1;
     try {
-      const res = await fetch(`/.netlify/functions/webhook-status?pi=${encodeURIComponent(paymentIntentId)}`);
+      const res = await fetch(`/.netlify/functions/stripe-webhook-status?pi=${encodeURIComponent(paymentIntentId)}`);
       const data = (await res.json()) as { received?: boolean };
       if (data.received) {
         confirm();

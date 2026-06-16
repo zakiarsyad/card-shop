@@ -52,6 +52,14 @@
   --radius-sm: 7px;
 }
 
+/* Per-provider brand themes (ADR-0010): same components, tokens swapped via the
+   `data-provider` attribute on <html>. Defaults above are Stripe's blurple. */
+[data-provider="xendit"] {
+  --color-accent: #0066ff; /* Xendit brand blue */
+  --color-accent-strong: #0052d6;
+  --color-accent-soft: #e6f0ff;
+}
+
 *,
 *::before,
 *::after {

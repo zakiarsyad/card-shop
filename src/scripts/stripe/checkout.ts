@@ -7,17 +7,17 @@
  * (ADR-0003). Domain logic (state machine, error taxonomy) lives in src/lib
  * and is unit-tested; this file is the thin DOM/Stripe wiring around it.
  */
-import { mapStripeError } from "../lib/errors";
-import { STATE_COPY } from "../lib/payment-state";
-import { formatAmount } from "../lib/money";
-import { PLANS, intervalSuffix, type PlanKey } from "../lib/catalog";
+import { mapStripeError } from "../../lib/stripe/errors";
+import { STATE_COPY } from "../../lib/stripe/payment-state";
+import { formatAmount } from "../../lib/money";
+import { PLANS, intervalSuffix, type PlanKey } from "../../lib/catalog";
 import type { Stripe, StripeElements, StripePaymentElement } from "@stripe/stripe-js";
 
 type Phase = "select" | "pay";
 
 const ENDPOINTS: Record<PlanKey, string> = {
-  one_time: "/.netlify/functions/create-payment-intent",
-  subscription: "/.netlify/functions/create-subscription",
+  one_time: "/.netlify/functions/stripe-create-payment-intent",
+  subscription: "/.netlify/functions/stripe-create-subscription",
 };
 
 export function initCheckout(): void {
@@ -35,7 +35,7 @@ export function initCheckout(): void {
   let elements: StripeElements | null = null;
   let paymentElement: StripePaymentElement | null = null;
   let idempotencyKey = "";
-  let nextChargeAt = 0; // subscription next-charge unix ts; threaded to /success
+  let nextChargeAt = 0; // subscription next-charge unix ts; threaded to /stripe/success
 
   const selectedPlan = (): PlanKey => {
     const checked = form.querySelector<HTMLInputElement>('input[name="plan"]:checked');
@@ -184,7 +184,7 @@ export function initCheckout(): void {
     // decline/validation error, the promise resolves here with `error` set.
     // Carry the next-charge date to the success page so it can show the
     // recurring summary. Stripe appends its own params to this return_url.
-    const returnUrl = new URL("/success", window.location.origin);
+    const returnUrl = new URL("/stripe/success", window.location.origin);
     if (nextChargeAt) returnUrl.searchParams.set("renews", String(nextChargeAt));
 
     const { error } = await stripe.confirmPayment({
