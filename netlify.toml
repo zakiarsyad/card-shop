@@ -15,6 +15,9 @@
   framework = "#custom"
   targetPort = 4327
   port = 8888
+  # Serve dev over HTTPS so Xendit Components (which requires HTTPS origins) works
+  # on localhost. Cert is self-signed + gitignored — run `npm run cert` to make it.
+  https = { certFile = ".cert/cert.pem", keyFile = ".cert/key.pem" }
 
 # The Stripe webhook needs the raw request body to verify the signature,
 # so it must not be parsed/transformed. Netlify passes the raw body by default

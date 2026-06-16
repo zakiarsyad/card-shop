@@ -10,5 +10,8 @@ export default defineConfig({
   output: "static",
   vite: {
     plugins: [tailwindcss()],
+    // Dev-only: let an HTTPS tunnel (e.g. cloudflared) reach the dev server so
+    // providers that require HTTPS (Xendit Components) can be tested locally.
+    server: { allowedHosts: [".trycloudflare.com"] },
   },
 });

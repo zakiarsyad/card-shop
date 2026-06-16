@@ -24,3 +24,6 @@ npm-debug.log*
 
 # netlify edge functions artifact
 deno.lock
+
+# Local dev TLS cert (Xendit Components needs HTTPS even on localhost)
+.cert/
