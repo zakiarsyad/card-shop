@@ -3,7 +3,7 @@ import Layout from "../../layouts/Layout.astro";
 import { BRAND } from "../../lib/brand";
 import DemoIntro from "../../components/stripe/DemoIntro.astro";
 import TestCards from "../../components/stripe/TestCards.astro";
-import Checkout from "../../components/stripe/Checkout.astro";
+import CheckoutShell from "../../components/CheckoutShell.astro";
 ---
 
 <Layout preconnectStripe provider="stripe" title={`${BRAND.name} — a Stripe checkout demo`}>
@@ -16,12 +16,17 @@ import Checkout from "../../components/stripe/Checkout.astro";
     
     <!-- Right: the live checkout -->
     <section class="checkout" aria-label="Checkout">
-      <Checkout />
+      <CheckoutShell provider="stripe" />
       <a class="readmore" href={`${BRAND.repo}/tree/main/docs`} rel="noopener">
         Source &amp; architecture →
       </a>
     </section>
   </main>
+
+  <script>
+    import { initCheckout } from "../../scripts/stripe/checkout";
+    initCheckout();
+  </script>
 </Layout>
 
 <style>

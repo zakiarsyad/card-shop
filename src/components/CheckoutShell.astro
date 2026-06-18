@@ -1,63 +1,67 @@
 ---
-import { PLANS, PRODUCT_NAME, priceFor } from "../../lib/catalog";
-import { formatAmount } from "../../lib/money";
-import PlanOption from "../PlanOption.astro";
-import TrustNote from "../TrustNote.astro";
+// Shared checkout card — one component for every provider. The only things that
+// differ are resolved from `provider`: the prices (catalog), the locale, the
+// brand name (TrustNote + lede). The provider's island mounts into #payment-mount
+// and (if it does 3-D Secure) into #action; the page wires which island runs.
+import { PLANS, PRODUCT_NAME, priceFor, type Provider } from "../lib/catalog";
+import { formatAmount } from "../lib/money";
+import PlanOption from "./PlanOption.astro";
+import TrustNote from "./TrustNote.astro";
+
+interface Props {
+  provider: Provider;
+  /** Locale for currency formatting (e.g. "id-ID" for Xendit/IDR). */
+  locale?: string;
+}
+const { provider, locale = "en-US" } = Astro.props;
+const name = provider[0].toUpperCase() + provider.slice(1); // "Stripe" / "Xendit"
 
 const oneTime = PLANS.one_time;
 const sub = PLANS.subscription;
-const oneTimeIdr = priceFor(oneTime, "xendit");
-const subIdr = priceFor(sub, "xendit");
-const oneTimePrice = formatAmount(oneTimeIdr.amount, oneTimeIdr.currency, "id-ID");
-const subPrice = formatAmount(subIdr.amount, subIdr.currency, "id-ID");
+const oneTimePrice = priceFor(oneTime, provider);
+const subPrice = priceFor(sub, provider);
+const fmt = (p: { amount: number; currency: string }) => formatAmount(p.amount, p.currency, locale);
 ---
 
 <section class="card" aria-labelledby="product-title">
   <p class="card__tag">Sample product</p>
   <h2 id="product-title" class="card__title">{PRODUCT_NAME}</h2>
   <p class="card__lede">
-    A sample digital product, so you can run a real Xendit checkout end to end.
+    A sample digital product, so you can run a real {name} checkout end to end.
   </p>
 
   <fieldset class="plans">
     <legend class="sr-only">Choose how to pay</legend>
-    <PlanOption plan={oneTime} price={oneTimeIdr} locale="id-ID" checked />
-    <PlanOption plan={sub} price={subIdr} locale="id-ID" />
+    <PlanOption plan={oneTime} price={oneTimePrice} locale={locale} checked />
+    <PlanOption plan={sub} price={subPrice} locale={locale} />
   </fieldset>
 
   <div class="total">
     <span class="total__label">Total due today</span>
-    <span class="total__amount" id="total-amount">{oneTimePrice}</span>
+    <span class="total__amount" id="total-amount">{fmt(oneTimePrice)}</span>
   </div>
-  <p class="recurring" id="recurring-note" hidden>Then {subPrice} every month.</p>
+  <p class="recurring" id="recurring-note" hidden>Then {fmt(subPrice)} every month.</p>
 
   <div id="payment-section" hidden>
-    <div id="xendit-payment" aria-label="Card details"></div>
+    <div id="payment-mount" aria-label="Card and payment details"></div>
   </div>
 
   <p id="status" class="status" role="status" aria-live="polite" hidden></p>
   <p id="error" class="error" role="alert" aria-live="assertive" hidden></p>
 
-  <button id="primary" class="btn" type="button">
-    Continue to payment
-  </button>
+  <button id="primary" class="btn" type="button">Continue to payment</button>
 
-  <TrustNote name="Xendit" />
+  <TrustNote name={name} />
 
-  <!-- 3-D Secure renders in a centered modal overlay (not inline below the form),
-       so the challenge reads like a hosted step. -->
-  <div class="action-modal" id="xendit-action-modal" hidden>
+  <!-- Inline 3-D Secure: providers that need a challenge mount it here (a centered
+       overlay, not inline below the form). Providers that don't simply never show it. -->
+  <div class="action-modal" id="action-modal" hidden>
     <div class="action-modal__panel">
       <p class="action-modal__title">Verify your payment</p>
-      <div id="xendit-action"></div>
+      <div id="action"></div>
     </div>
   </div>
 </section>
-
-<script>
-  import { initCheckout } from "../../scripts/xendit/checkout";
-  initCheckout();
-</script>
 
 <style>
   .card {
@@ -109,7 +113,7 @@ const subPrice = formatAmount(subIdr.amount, subIdr.currency, "id-ID");
   }
   .total__amount {
     font-weight: 700;
-    font-size: clamp(1.6rem, 5vw, 2.1rem);
+    font-size: clamp(1.75rem, 5.5vw, 2.5rem);
     color: var(--color-ink-900);
     line-height: 1;
     font-variant-numeric: tabular-nums;
@@ -139,6 +143,7 @@ const subPrice = formatAmount(subIdr.amount, subIdr.currency, "id-ID");
     background: var(--color-danger-soft);
     color: var(--color-danger);
   }
+  /* :global because the title <strong> is injected via JS (innerHTML). */
   .error :global(strong) {
     display: block;
     margin-bottom: 0.2rem;
@@ -220,8 +225,7 @@ const subPrice = formatAmount(subIdr.amount, subIdr.currency, "id-ID");
     font-size: var(--text-sm);
     color: var(--color-ink-900);
   }
-  /* Reserve room so the challenge iframe has space to render. */
-  .action-modal #xendit-action {
+  .action-modal #action {
     min-height: 18rem;
   }
 </style>

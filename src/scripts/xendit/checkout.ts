@@ -24,9 +24,9 @@ export function initCheckout(): void {
   const totalEl = document.getElementById("total-amount");
   const recurringEl = document.getElementById("recurring-note");
   const paymentSection = document.getElementById("payment-section");
-  const mountEl = document.getElementById("xendit-payment");
-  const actionEl = document.getElementById("xendit-action");
-  const actionModal = document.getElementById("xendit-action-modal");
+  const mountEl = document.getElementById("payment-mount");
+  const actionEl = document.getElementById("action");
+  const actionModal = document.getElementById("action-modal");
   const statusEl = document.getElementById("status");
   const errorEl = document.getElementById("error");
   if (!form || !primary || !totalEl || !paymentSection || !mountEl || !actionEl || !statusEl || !errorEl) return;

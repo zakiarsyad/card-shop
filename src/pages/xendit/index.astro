@@ -2,7 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { BRAND } from "../../lib/brand";
 import DemoIntro from "../../components/xendit/DemoIntro.astro";
-import Checkout from "../../components/xendit/Checkout.astro";
+import CheckoutShell from "../../components/CheckoutShell.astro";
 ---
 
 <Layout provider="xendit" title={`${BRAND.name} — a Xendit checkout demo`}>
@@ -14,10 +14,15 @@ import Checkout from "../../components/xendit/Checkout.astro";
 
     <!-- Right: the live checkout -->
     <section class="checkout" aria-label="Checkout">
-      <Checkout />
+      <CheckoutShell provider="xendit" locale="id-ID" />
       <a class="readmore" href="/">← All demos</a>
     </section>
   </main>
+
+  <script>
+    import { initCheckout } from "../../scripts/xendit/checkout";
+    initCheckout();
+  </script>
 </Layout>
 
 <style>

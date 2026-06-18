@@ -158,7 +158,7 @@ export function initCheckout(): void {
       });
       const el = elements.create("payment", { layout: "tabs" });
       paymentElement = el;
-      el.mount("#payment-element");
+      el.mount("#payment-mount");
 
       paymentSection!.hidden = false;
       clearStatus();
