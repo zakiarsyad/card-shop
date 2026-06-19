@@ -11,6 +11,7 @@ import { mapStripeError } from "../../lib/stripe/errors";
 import { STATE_COPY } from "../../lib/stripe/payment-state";
 import { formatAmount } from "../../lib/money";
 import { PLANS, intervalSuffix, type PlanKey } from "../../lib/catalog";
+import { createCheckoutUi } from "../checkout-ui";
 import type { Stripe, StripeElements, StripePaymentElement } from "@stripe/stripe-js";
 
 type Phase = "select" | "pay";
@@ -42,31 +43,11 @@ export function initCheckout(): void {
     return (checked?.value as PlanKey) ?? "one_time";
   };
 
-  const setButton = (label: string, opts: { busy?: boolean; disabled?: boolean } = {}) => {
-    primary.dataset.busy = opts.busy ? "true" : "false";
-    primary.disabled = Boolean(opts.disabled);
-    primary.innerHTML = `<span class="btn__spinner" aria-hidden="true"></span><span>${label}</span>`;
-  };
-
-  const showStatus = (tone: string, title: string, message: string) => {
-    statusEl.hidden = false;
-    statusEl.dataset.tone = tone;
-    statusEl.textContent = message ? `${title} ${message}` : title;
-  };
-  const clearStatus = () => {
-    statusEl.hidden = true;
-    statusEl.textContent = "";
-  };
-  const showError = (title: string, message: string) => {
-    errorEl.hidden = false;
-    errorEl.innerHTML = `<strong></strong><span></span>`;
-    errorEl.querySelector("strong")!.textContent = title;
-    errorEl.querySelector("span")!.textContent = message;
-  };
-  const clearError = () => {
-    errorEl.hidden = true;
-    errorEl.textContent = "";
-  };
+  const { setButton, showStatus, clearStatus, showError, clearError } = createCheckoutUi({
+    primary,
+    status: statusEl,
+    error: errorEl,
+  });
 
   // The CTA must say exactly what it does — and never let a subscription read
   // like a one-time charge (docs/STANDARDS.md → Design; ADR-0006).

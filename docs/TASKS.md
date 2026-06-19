@@ -8,7 +8,7 @@ can't be done from code alone — they're set up and documented, ready to run.
 
 ## M0 — Setup
 
-- [x] Init Astro + TypeScript project; add Tailwind CSS v4
+- [x] Init Astro + TypeScript project; CSS design tokens (plain `:root` custom properties — Tailwind, originally used only for `@theme` token declarations, was removed in M9)
 - [x] Add Netlify config + functions directory (`netlify.toml`, `netlify/functions/`)
 - [x] Install `stripe` and `@stripe/stripe-js`
 - [x] Create a test Product + two Prices in Stripe; record the Price IDs
@@ -87,8 +87,23 @@ can't be done from code alone — they're set up and documented, ready to run.
       verification step — shown in the modal; confirm interactively in a real browser.)
 - [x] Namespace per provider: `lib/stripe`/`lib/xendit`, `stripe-*`/`xendit-*` functions; shared
       code stays unprefixed (`lib/` core, `PlanOption`/`TrustNote`, `scripts/test-cards.ts`, `_shared/`)
-- [ ] Live success indicator on `/xendit/success` (webhook receipt marker + poll), like Stripe
+- [x] Live success indicator on `/xendit/success` (webhook receipt marker + poll), like Stripe
+      — keyed by the session `reference_id` (echoed in `payment.capture`); `xendit-webhook-status` endpoint
 
 ## M8 — Adyen (deferred)
 
 - [ ] Deferred — a test account is hard to obtain. Build `/adyen` (Drop-in + webhook HMAC) when available.
+
+## M9 — Cleanup & hardening
+
+- [x] Xendit subscription completion: the Components SDK (v0.0.24) doesn't emit `session-complete`
+      for SUBSCRIPTION sessions, so the island also polls our own `xendit-webhook-status` and navigates
+      once the server confirms the session (webhook = source of truth, ADR-0002). One-time still uses the event.
+- [x] Removed Tailwind CSS — it was pulled in only to declare design tokens via `@theme`, with no
+      utility classes or `@apply` anywhere. Replaced with plain `:root` custom properties; dropped
+      `tailwindcss` + `@tailwindcss/vite`. No visual change.
+- [x] De-duplicated the providers: shared `scripts/checkout-ui.ts` (button/status/error helpers) and
+      `scripts/webhook-indicator.ts` (the success-page badge), both used by Stripe and Xendit.
+- [x] Audited for dead code / unused deps / unoptimized paths — none found.
+- [x] Two-domain serve: `checkout.zakiarsyad.com` → the multi-provider site; `/` → `/stripe`;
+      `/stripe` and `/xendit` serve directly. Stripe + Xendit webhooks registered to that host.

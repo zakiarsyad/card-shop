@@ -82,11 +82,13 @@ src/
     stripe/               index.astro (checkout) + success.astro (reads, never fulfills)
     xendit/               index.astro (checkout) + success.astro
   scripts/              ← browser controllers (vanilla TS, no framework)
+    checkout-ui.ts        shared button/status/error DOM helpers — SHARED
+    webhook-indicator.ts  shared success-page "webhook received" badge (poll) — SHARED
     test-cards.ts         click-to-copy for the test-card chips — SHARED
-    stripe/               checkout.ts (Stripe.js confirm) + success.ts (polls webhook-status)
-    xendit/               checkout.ts (Components SDK confirm)
-  layouts/Layout.astro   <head>, fonts, preconnect, SEO; `provider` prop → per-brand theming
-  styles/global.css      design tokens (Tailwind v4 @theme) + per-provider themes — SHARED
+    stripe/               checkout.ts (Stripe.js confirm) + success.ts
+    xendit/               checkout.ts (Components SDK confirm) + success.ts
+  layouts/Layout.astro   <head>, fonts, preconnect, GA, SEO; `provider` prop → per-brand theming
+  styles/global.css      design tokens (plain CSS custom properties on :root) + per-provider themes — SHARED
 
 netlify/functions/      ← serverless endpoints (thin shells over src/lib); prefixed per provider
   stripe-create-payment-intent.ts   one-time
@@ -94,12 +96,13 @@ netlify/functions/      ← serverless endpoints (thin shells over src/lib); pre
   stripe-webhook.ts                 verifies signature, routes events, "fulfills", marks receipt
   stripe-webhook-status.ts          has this payment's webhook arrived? (success-page indicator)
   xendit-create-session.ts          create a Components Payment Session (PAY / SUBSCRIPTION)
-  xendit-webhook.ts                 verify x-callback-token, route to fulfillment
+  xendit-webhook.ts                 verify x-callback-token, route to fulfillment, mark receipt
+  xendit-webhook-status.ts          has this payment's webhook arrived? (success-page indicator)
   _shared/
     checkout.ts              shared request parsing/validation
     stripe.ts / xendit.ts    provider API clients (reject live keys)
     http.ts                  json()/errorResponse()/readJson() helpers
-    webhook-store.ts         Netlify Blobs receipt marker (keyed by PaymentIntent id)
+    webhook-store.ts         Netlify Blobs receipt marker (Stripe: PaymentIntent id; Xendit: reference_id)
 
 docs/                   ← read these to understand the "why" (start with README.md)
 ```

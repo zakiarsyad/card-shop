@@ -3,6 +3,7 @@ import { json, errorResponse, methodNotAllowed } from "./_shared/http";
 import { createLogger } from "../../src/lib/log";
 import { createMemoryStore, processOnce } from "../../src/lib/idempotency";
 import { verifyCallbackToken, decideFulfillment, type XenditWebhookEvent } from "../../src/lib/xendit/webhook";
+import { markXenditSeen } from "./_shared/webhook-store";
 
 // Module scope: dedupes within a warm instance. A durable store replaces this in
 // production — same as the Stripe webhook (see idempotency.ts / README).
@@ -34,6 +35,23 @@ export default async function handler(req: Request, _context: Context): Promise<
 
   const paymentId = evt.data?.payment_id ?? "";
   const elog = log.child({ event: evt.event, paymentId });
+  // Visible arrival marker — confirms (in Netlify logs) that Xendit reached us
+  // and which reference_id it carries (must match the success page's `ref`).
+  elog.info("webhook received", { refId: evt.data?.reference_id });
+
+  // Mark the receipt for the success-page indicator, keyed by the SESSION
+  // reference_id the page polls. `payment_session.completed` carries that exact
+  // id; `payment.capture` appends a per-payment suffix (…_XXXX), so its
+  // reference_id would never match the page's `ref`. Idempotent (setJSON), so it
+  // runs outside the dedupe gate — and `payment.capture`/`payment_session.completed`
+  // share a payment_id, which per-instance dedup could otherwise collapse.
+  if (evt.event === "payment_session.completed" && evt.data?.reference_id) {
+    try {
+      await markXenditSeen(evt.data.reference_id, Math.floor(Date.now() / 1000));
+    } catch (e) {
+      elog.warn("receipt marker failed", { message: e instanceof Error ? e.message : String(e) });
+    }
+  }
 
   try {
     // No stable payment_id (non-payment events) → process once, can't dedupe.

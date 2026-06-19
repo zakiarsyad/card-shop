@@ -19,6 +19,14 @@
   # on localhost. Cert is self-signed + gitignored — run `npm run cert` to make it.
   https = { certFile = ".cert/cert.pem", keyFile = ".cert/key.pem" }
 
+# Root → the Stripe demo (the default provider). /stripe and /xendit serve directly.
+# `force` so it wins over the static landing page that would otherwise serve at /.
+[[redirects]]
+  from = "/"
+  to = "/stripe/"
+  status = 302
+  force = true
+
 # The Stripe webhook needs the raw request body to verify the signature,
 # so it must not be parsed/transformed. Netlify passes the raw body by default
 # for functions; we read event.body verbatim in the handler.

@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
 /* ───────────────────────────────────────────────────────────────────────
    Design tokens — Stripe-aligned visual language.
    See docs/decisions/ADR-0006-visual-design-language.md and
@@ -13,7 +11,7 @@
    the signature "blurple" (#635BFF) for primary actions, cool #F6F9FC canvas,
    and Stripe's own error red (#DF1B41).
    ─────────────────────────────────────────────────────────────────────── */
-@theme {
+:root {
   --font-sans: "Inter Variable", system-ui, -apple-system, "Segoe UI", Roboto,
     Helvetica, Arial, sans-serif;
 

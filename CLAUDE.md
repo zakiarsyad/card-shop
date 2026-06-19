@@ -18,8 +18,8 @@ apply equally to Xendit.
 
 ## Stack
 
-- Astro (SSR) + TypeScript + Tailwind CSS v4
-- Netlify Functions (serverless) for server endpoints + the Stripe webhook
+- Astro (static output) + TypeScript + plain CSS (hand-authored design tokens on `:root`, no CSS framework)
+- Netlify Functions (serverless) for server endpoints + the provider webhooks
 - Stripe Node SDK on the server; Stripe.js + Payment Element on the client
 - Stripe **test mode only** — no live keys, ever
 

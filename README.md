@@ -47,7 +47,7 @@ payments depth — is written down in [`docs/STANDARDS.md`](docs/STANDARDS.md). 
 
 ## Stack
 
-Astro · TypeScript · Tailwind CSS v4 · Netlify Functions · Stripe (Payment Element + Node SDK)
+Astro · TypeScript · plain CSS (hand-authored design tokens, no framework) · Netlify Functions · Stripe (Payment Element) + Xendit (Components SDK), both with the Node SDK
 
 ## Architecture (the Stripe flow)
 

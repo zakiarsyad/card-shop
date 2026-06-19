@@ -37,8 +37,8 @@ const { name } = Astro.props;
     flex-direction: column;
     text-align: center;
   }
-  /* Lock + label on one centered row (Tailwind preflight makes <svg> block,
-     so we lay it out explicitly instead of relying on inline flow). */
+  /* Lock + label on one centered row — laid out explicitly so it doesn't depend
+     on the <svg>'s default inline/block display. */
   .trust__line {
     display: flex;
     align-items: center;

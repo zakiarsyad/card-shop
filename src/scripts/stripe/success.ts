@@ -3,6 +3,7 @@
  * it never fulfills (fulfillment is the webhook's job; ADR-0002).
  */
 import { statusToUiState, STATE_COPY, type PaymentIntentStatus, type UiState } from "../../lib/stripe/payment-state";
+import { watchWebhook } from "../webhook-indicator";
 
 const TONE: Record<string, string> = {
   succeeded: "succeeded",
@@ -43,7 +44,11 @@ export async function renderSuccess(): Promise<void> {
       const note = document.getElementById("note");
       if (note) note.hidden = false;
       renderSubscription(params.get("renews"));
-      watchWebhook(params.get("payment_intent"));
+      watchWebhook({
+        id: params.get("payment_intent"),
+        provider: "Stripe",
+        statusUrl: (id) => `/.netlify/functions/stripe-webhook-status?pi=${encodeURIComponent(id)}`,
+      });
     }
     reveal();
   };
@@ -108,58 +113,3 @@ function renderSubscription(renews: string | null): void {
   el.hidden = false;
 }
 
-/**
- * Live indicator: poll until Stripe's webhook for this payment has reached the
- * server, then flip the badge to "confirmed". This is the visible proof that
- * fulfillment runs on the webhook (server-to-server), not on this page.
- */
-let webhookStarted = false;
-
-function watchWebhook(paymentIntentId: string | null): void {
-  if (webhookStarted) return; // paint() can run twice (redirect hint + retrieve)
-  const box = document.getElementById("webhook");
-  const text = document.getElementById("webhook-text");
-  if (!box || !text || !paymentIntentId) return;
-  webhookStarted = true;
-
-  const caption = document.getElementById("webhook-caption");
-  if (caption) caption.hidden = false;
-
-  const set = (state: string, label: string) => {
-    box.dataset.state = state;
-    text.textContent = label;
-    box.hidden = false;
-  };
-  set("waiting", "Waiting for Stripe's webhook…");
-
-  // Hold the "waiting" state visible for a beat even if the webhook is already
-  // in — otherwise it flips to green too fast to notice.
-  const startedAt = Date.now();
-  const MIN_WAIT = 2800;
-  const confirm = () => {
-    const wait = Math.max(0, MIN_WAIT - (Date.now() - startedAt));
-    window.setTimeout(() => set("received", "Webhook received — order fulfilled"), wait);
-  };
-
-  let tries = 0;
-  const maxTries = 12; // ~24s
-  const poll = async () => {
-    tries += 1;
-    try {
-      const res = await fetch(`/.netlify/functions/stripe-webhook-status?pi=${encodeURIComponent(paymentIntentId)}`);
-      const data = (await res.json()) as { received?: boolean };
-      if (data.received) {
-        confirm();
-        return;
-      }
-    } catch {
-      /* transient */
-    }
-    if (tries >= maxTries) {
-      set("idle", "Webhook not received yet — fulfillment completes in the background.");
-      return;
-    }
-    window.setTimeout(() => void poll(), 2000);
-  };
-  void poll();
-}

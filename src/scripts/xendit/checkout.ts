@@ -9,10 +9,16 @@
  *   → on "init": mount the CARDS channel component
  *   → "submission-ready" enables the button → submit()
  *   → "action-begin"/"action-end" host the 3-D Secure challenge in a modal
- *   → "session-complete" → /xendit/success
+ *   → "session-complete" → /xendit/success  (one-time / PAY only)
+ *
+ * SUBSCRIPTION sessions complete server-side but the SDK (v0.0.24) doesn't emit
+ * "session-complete" on the client. Fulfillment is webhook-driven anyway
+ * (ADR-0002), so after submit we also poll our own webhook-receipt endpoint and
+ * navigate the moment the server confirms the session — covering both flows.
  */
 import { PLANS, priceFor, type PlanKey } from "../../lib/catalog";
 import { formatAmount } from "../../lib/money";
+import { createCheckoutUi } from "../checkout-ui";
 
 type Phase = "select" | "pay";
 
@@ -35,6 +41,8 @@ export function initCheckout(): void {
   let components: import("xendit-components-web").XenditComponents | null = null;
   let sessionId = "";
   let idempotencyKey = "";
+  let successPoll = 0; // webhook-status fallback poll (subscription completion)
+  let navigated = false;
 
   const selectedPlan = (): PlanKey => {
     const checked = form.querySelector<HTMLInputElement>('input[name="plan"]:checked');
@@ -45,29 +53,39 @@ export function initCheckout(): void {
     return formatAmount(amount, currency, "id-ID");
   };
 
-  const setButton = (label: string, opts: { busy?: boolean; disabled?: boolean } = {}) => {
-    primary.dataset.busy = opts.busy ? "true" : "false";
-    primary.disabled = Boolean(opts.disabled);
-    primary.innerHTML = `<span class="btn__spinner" aria-hidden="true"></span><span>${label}</span>`;
+  const { setButton, showStatus, clearStatus, showError, clearError } = createCheckoutUi({
+    primary,
+    status: statusEl,
+    error: errorEl,
+  });
+
+  // Navigate to the success page. Guarded so the SDK's session-complete event
+  // and the webhook poll below can't both fire it.
+  const goToSuccess = () => {
+    if (navigated) return;
+    navigated = true;
+    window.clearInterval(successPoll);
+    const url = new URL("/xendit/success", window.location.origin);
+    if (sessionId) url.searchParams.set("session", sessionId);
+    if (idempotencyKey) url.searchParams.set("ref", idempotencyKey); // keys the live indicator
+    window.location.assign(url.toString());
   };
-  const showStatus = (tone: string, title: string, message: string) => {
-    statusEl.hidden = false;
-    statusEl.dataset.tone = tone;
-    statusEl.textContent = message ? `${title} ${message}` : title;
-  };
-  const clearStatus = () => {
-    statusEl.hidden = true;
-    statusEl.textContent = "";
-  };
-  const showError = (title: string, message: string) => {
-    errorEl.hidden = false;
-    errorEl.innerHTML = `<strong></strong><span></span>`;
-    errorEl.querySelector("strong")!.textContent = title;
-    errorEl.querySelector("span")!.textContent = message;
-  };
-  const clearError = () => {
-    errorEl.hidden = true;
-    errorEl.textContent = "";
+  // Poll our receipt endpoint until the server confirms the session, then
+  // navigate. This is what carries SUBSCRIPTION sessions to success (the SDK
+  // doesn't fire session-complete for them); one-time usually navigates on the
+  // event first. Capped so it can't spin forever.
+  const pollForCompletion = () => {
+    window.clearInterval(successPoll);
+    let tries = 0;
+    successPoll = window.setInterval(async () => {
+      if (navigated || ++tries > 40) return window.clearInterval(successPoll);
+      try {
+        const res = await fetch(`/.netlify/functions/xendit-webhook-status?ref=${encodeURIComponent(idempotencyKey)}`);
+        if (((await res.json()) as { received?: boolean }).received) goToSuccess();
+      } catch {
+        /* transient — keep polling */
+      }
+    }, 2500);
   };
 
   // CTA says exactly what it does; a subscription never reads as a one-time charge.
@@ -84,6 +102,8 @@ export function initCheckout(): void {
   // Changing plan after opening payment invalidates the session (it was created
   // for the old plan) — tear down and require a fresh "Continue".
   const resetToSelect = () => {
+    window.clearInterval(successPoll);
+    navigated = false;
     components = null;
     sessionId = "";
     idempotencyKey = "";
@@ -139,6 +159,7 @@ export function initCheckout(): void {
         mountEl!.replaceChildren(sdk.createChannelComponent(channel));
       });
       sdk.addEventListener("submission-ready", () => setButton(payLabel(), { disabled: false }));
+
       // 3-D Secure: host the challenge in the modal overlay.
       sdk.addEventListener("action-begin", () => {
         // Reveal the modal BEFORE mounting, so the challenge iframe renders into
@@ -150,16 +171,36 @@ export function initCheckout(): void {
         if (actionModal) actionModal.hidden = true;
         actionEl!.replaceChildren();
       });
-      sdk.addEventListener("session-complete", () => {
-        const url = new URL("/xendit/success", window.location.origin);
-        if (sessionId) url.searchParams.set("session", sessionId);
-        window.location.assign(url.toString());
-      });
+      // Fires for one-time (PAY); SUBSCRIPTION reaches success via pollForCompletion.
+      sdk.addEventListener("session-complete", goToSuccess);
       sdk.addEventListener("session-expired-or-canceled", () => {
+        window.clearInterval(successPoll);
         if (actionModal) actionModal.hidden = true;
         clearStatus();
         showError("Payment didn't go through", "No charge was made. You can try again.");
         setButton(payLabel(), { disabled: false });
+      });
+      // A declined/failed attempt ends here (success is instead followed by
+      // session-complete). The SDK returns to the ready state, so re-enable the
+      // button and surface the error it hands us — otherwise the UI would hang.
+      sdk.addEventListener("submission-end", (e) => {
+        if (!e.userErrorMessage && !e.developerErrorMessage) return; // success path
+        window.clearInterval(successPoll);
+        if (actionModal) actionModal.hidden = true;
+        clearStatus();
+        const msg = e.userErrorMessage ?? [];
+        showError(msg[0] ?? "Payment didn't go through", msg.slice(1).join(" ") || "No charge was made. You can try again.");
+        setButton(payLabel(), { disabled: false });
+      });
+      // Unrecoverable SDK error — the session must be recreated (a fresh
+      // "Continue" does that). Matches Xendit's reference integration.
+      sdk.addEventListener("fatal-error", () => {
+        window.clearInterval(successPoll);
+        if (actionModal) actionModal.hidden = true;
+        clearStatus();
+        showError("Something went wrong", "Please reload and try again.");
+        setButton("Continue to payment", { disabled: false });
+        phase = "select";
       });
 
       paymentSection!.hidden = false;
@@ -180,6 +221,7 @@ export function initCheckout(): void {
     setButton(payLabel(), { busy: true, disabled: true });
     showStatus("submitting", "Confirming your payment…", "Hang tight — this only takes a moment.");
     components.submit();
+    pollForCompletion();
   }
 
   primary.addEventListener("click", () => {
